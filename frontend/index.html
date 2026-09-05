@@ -8,7 +8,7 @@
 </head>
 <body>
     <header>
-        <h1>Airfare Price Index — India</h1>
+        <h1>Airfare Price Index</h1>
         <p class="subtitle">Daily, flight-matched, credibility-adjusted airfare measurement</p>
     </header>
 
@@ -39,6 +39,11 @@
         <canvas id="medianChart" width="400" height="200"></canvas>
     </section>
 
+    <section id="history-chart-section">
+    <h2>Median Fare Trend — DEL-BOM</h2>
+    <canvas id="historyChart" width="400" height="200"></canvas>
+</section>
+
     <section id="drilldown-section">
         <h2>Audit Trail — Raw Observations</h2>
         <label for="route-select">Select route:</label>
@@ -57,3 +62,10 @@
                     <th>Source</th>
                 </tr>
             </thead>
+            <tbody id="obs-table-body"></tbody>
+        </table>
+    </section>
+
+    <script src="app.js"></script>
+</body>
+</html>

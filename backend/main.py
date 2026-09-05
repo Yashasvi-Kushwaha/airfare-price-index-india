@@ -38,7 +38,7 @@ def get_index_all_routes():
     session = SessionLocal()
     today = datetime.now()
     yesterday = today - timedelta(days=1)
-
+   
     route_results = []
 
     for r in ROUTES:
@@ -91,6 +91,7 @@ def get_index_all_routes():
         r["stress_score_percent"] = round(stress, 1)
 
     return {
+        "date": today.strftime("%Y-%m-%d"),
         "pooled_class_average_relative": round(pooled_relative, 4),
         "routes": route_results
     }
@@ -120,3 +121,19 @@ def get_raw_observations(origin: str, destination: str):
         }
         for o in obs
     ]
+
+@app.get("/api/median-history/{origin}/{destination}")
+def median_history(origin: str, destination: str, days: int = 7):
+    session = SessionLocal()
+    history = []
+    for i in range(days):
+        target_date = datetime.now() - timedelta(days=i)
+        obs = get_observations_for_date(session, origin.upper(), destination.upper(), target_date)
+        stats = daily_stats(obs)
+        history.append({
+            "date": target_date.strftime("%Y-%m-%d"),
+            "median_fare": stats["median"],
+            "n_observations": stats["n"]
+        })
+    history.reverse()  # oldest to newest, for a left-to-right chart
+    return history

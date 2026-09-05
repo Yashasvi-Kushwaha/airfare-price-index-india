@@ -29,8 +29,8 @@ section {
 
 .route-card h3 { margin: 0 0 8px 0; }
 .route-card .stat { font-size: 1.4em; font-weight: bold; }
-.route-card .stat.positive { color: #c0392b; }
-.route-card .stat.negative { color: #27ae60; }
+.route-card .stat.positive { color: #27ae60 ; }
+.route-card .stat.negative { color: #c0392b; }
 
 table { width: 100%; border-collapse: collapse; margin-top: 12px; }
 th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #eee; }

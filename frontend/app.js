@@ -3,6 +3,7 @@ const API_BASE = "http://127.0.0.1:8000";
 async function loadIndexData() {
     const res = await fetch(`${API_BASE}/api/index`);
     const data = await res.json();
+    document.querySelector("#chart-section h2").textContent = `Median Fare by Route — ${data.date}`;
     renderRouteCards(data.routes);
     renderStressTable(data.routes);
     renderMedianChart(data.routes);
@@ -82,5 +83,28 @@ document.getElementById("route-select").addEventListener("change", (e) => {
     loadObservations(e.target.value);
 });
 
+
+
+let historyChartInstance = null;
+async function loadMedianHistory(origin, destination) {
+    const res = await fetch(`${API_BASE}/api/median-history/${origin}/${destination}`);
+    const data = await res.json();
+
+    const ctx = document.getElementById("historyChart").getContext("2d");
+    const labels = data.map(d => d.date);
+    const medians = data.map(d => d.median_fare ?? 0);
+
+    if (historyChartInstance) historyChartInstance.destroy();
+    historyChartInstance = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: [{ label: `${origin}-${destination} Median Fare Over Time`, data: medians }]
+        }
+    });
+}
+
+
 loadIndexData();
 loadObservations("DEL/BOM");
+loadMedianHistory("DEL", "BOM");
