@@ -1,0 +1,39 @@
+body {
+    font-family: system-ui, sans-serif;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #f7f8fa;
+    color: #1a1a1a;
+}
+
+header { margin-bottom: 30px; }
+.subtitle { color: #555; }
+
+section {
+    background: white;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.route-card {
+    display: inline-block;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-right: 12px;
+    min-width: 180px;
+}
+
+.route-card h3 { margin: 0 0 8px 0; }
+.route-card .stat { font-size: 1.4em; font-weight: bold; }
+.route-card .stat.positive { color: #c0392b; }
+.route-card .stat.negative { color: #27ae60; }
+
+table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #eee; }
+th { background: #fafafa; }
+
+.note { color: #777; font-size: 0.9em; }
