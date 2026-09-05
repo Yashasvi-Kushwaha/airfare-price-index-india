@@ -111,5 +111,5 @@ if __name__ == "__main__":
         new_index = chain_index(running_index, movement["jevons_movement"])
         print(f"\nChained index: {new_index:.2f}")
     # add this debug line temporarily in jevons.py before the print statements
-for obs in today_obs:
-    print(obs.flight_number, obs.collection_timestamp, obs.total_fare)
+# for obs in today_obs:
+#     print(obs.flight_number, obs.collection_timestamp, obs.total_fare)
