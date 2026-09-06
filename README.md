@@ -119,7 +119,7 @@ Dashboard (Vanilla JS + Chart.js, sidebar navigation)
 | `GET /api/median-history/{origin}/{destination}` | Median fare trend over recent days |
 | `GET /api/lead-time/{origin}/{destination}` | T+7 vs T+30 fare comparison |
 
-## Current Status — Honest Scope
+## Current Status 
 
 **What's fully working:** the complete pipeline — schema, index calculation,
 credibility weighting, stress score, all four API endpoints, and a
