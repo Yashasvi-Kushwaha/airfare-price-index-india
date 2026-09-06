@@ -49,6 +49,7 @@ def jevons_movement(today_obs, yesterday_obs):
     Matches observations by flight_number (same flight, consecutive days),
     computes each matched flight's price relative, takes the geometric mean.
     Returns None if no matched flights exist.
+    Return dict always has keys: jevons_movement, matched_flights, relatives.
     """
     today_by_flight = {obs.flight_number: obs.total_fare for obs in today_obs}
     yesterday_by_flight = {obs.flight_number: obs.total_fare for obs in yesterday_obs}
@@ -73,7 +74,7 @@ def jevons_movement(today_obs, yesterday_obs):
 
     return {
         "jevons_movement": jevons,
-        "matched_flights": len(relatives),
+        "matched_flights": n,
         "relatives": relatives
     }
 
@@ -81,7 +82,7 @@ def jevons_movement(today_obs, yesterday_obs):
 def chain_index(previous_index, jevons_movement_value):
     """Chains today's Jevons movement onto the running index."""
     if jevons_movement_value is None:
-        return previous_index  # no movement data, carry forward unchanged
+        return previous_index
     return previous_index * (jevons_movement_value / 100)
 
 
@@ -107,9 +108,6 @@ if __name__ == "__main__":
     print(f"\nJevons movement: {movement}")
 
     if movement:
-        running_index = 100.0  # starting base index
+        running_index = 100.0
         new_index = chain_index(running_index, movement["jevons_movement"])
         print(f"\nChained index: {new_index:.2f}")
-    # add this debug line temporarily in jevons.py before the print statements
-# for obs in today_obs:
-#     print(obs.flight_number, obs.collection_timestamp, obs.total_fare)

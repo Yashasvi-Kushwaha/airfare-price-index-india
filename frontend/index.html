@@ -7,65 +7,82 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>Airfare Price Index</h1>
-        <p class="subtitle">Daily, flight-matched, credibility-adjusted airfare measurement</p>
-    </header>
+    <div class="layout">
+        <nav class="sidebar">
+            <h1 class="brand">Airfare Price Index</h1>
+            <p class="subtitle">India</p>
+            <ul class="nav-links">
+                <li><a href="#overview" class="nav-link active" data-target="overview">Overview</a></li>
+                <li><a href="#stress" class="nav-link" data-target="stress">Route Stress Comparison</a></li>
+                <li><a href="#trends" class="nav-link" data-target="trends">Fare Trends</a></li>
+                <li><a href="#leadtime" class="nav-link" data-target="leadtime">Lead-Time Analysis</a></li>
+                <li><a href="#audit" class="nav-link" data-target="audit">Audit Trail</a></li>
+            </ul>
+        </nav>
 
-    <section id="summary">
-        <h2>Route Summary</h2>
-        <div id="route-cards"></div>
-    </section>
+        <main class="content">
+            <section id="overview" class="view active">
+                <h2>Route Summary</h2>
+                <div id="route-cards"></div>
 
-    <section id="stress-table-section">
-        <h2>Stress &amp; Credibility Comparison</h2>
-        <p class="note">Raw vs. credibility-adjusted movement — thin routes are dampened in the trusted index but still flagged here if under stress.</p>
-        <table id="stress-table">
-            <thead>
-                <tr>
-                    <th>Route</th>
-                    <th>Observations</th>
-                    <th>Raw Change</th>
-                    <th>Credibility-Adjusted Change</th>
-                    <th>Stress Score</th>
-                </tr>
-            </thead>
-            <tbody id="stress-table-body"></tbody>
-        </table>
-    </section>
+                <h2>Median Fare by Route (Today)</h2>
+                <canvas id="medianChart" width="400" height="200"></canvas>
+            </section>
 
-    <section id="chart-section">
-        <h2>Median Fare by Route (Today)</h2>
-        <canvas id="medianChart" width="400" height="200"></canvas>
-    </section>
+            <section id="stress" class="view">
+                <h2>Stress &amp; Credibility Comparison</h2>
+                <p class="note">Raw vs. credibility-adjusted movement — thin routes are dampened in the trusted index but still flagged here if under stress.</p>
+                <table id="stress-table">
+                    <thead>
+                        <tr>
+                            <th>Route</th>
+                            <th>Observations</th>
+                            <th>Raw Change</th>
+                            <th>Credibility-Adjusted Change</th>
+                            <th>Stress Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stress-table-body"></tbody>
+                </table>
+            </section>
 
-    <section id="history-chart-section">
-    <h2>Median Fare Trend — DEL-BOM</h2>
-    <canvas id="historyChart" width="400" height="200"></canvas>
-</section>
+            <section id="trends" class="view">
+                <h2>Median Fare Trend — DEL-BOM</h2>
+                <canvas id="historyChart" width="400" height="200"></canvas>
+            </section>
 
-    <section id="drilldown-section">
-        <h2>Audit Trail — Raw Observations</h2>
-        <label for="route-select">Select route:</label>
-        <select id="route-select">
-            <option value="DEL/BOM">DEL-BOM</option>
-            <option value="DEL/IXL">DEL-IXL</option>
-        </select>
-        <table id="obs-table">
-            <thead>
-                <tr>
-                    <th>Flight</th>
-                    <th>Airline</th>
-                    <th>Departure</th>
-                    <th>Fare (₹)</th>
-                    <th>Collected At</th>
-                    <th>Source</th>
-                </tr>
-            </thead>
-            <tbody id="obs-table-body"></tbody>
-        </table>
-    </section>
+            <section id="leadtime" class="view">
+                <h2>Lead-Time Relationship (Observed)</h2>
+                <p class="note">How fare changes depending on how far in advance you book.</p>
+                <div id="leadtime-summary"></div>
+                <canvas id="leadTimeChart" width="400" height="200"></canvas>
+            </section>
+
+            <section id="audit" class="view">
+                <h2>Audit Trail — Raw Observations</h2>
+                <label for="route-select">Select route:</label>
+                <select id="route-select">
+                    <option value="DEL/BOM">DEL-BOM</option>
+                    <option value="DEL/IXL">DEL-IXL</option>
+                </select>
+                <table id="obs-table">
+                    <thead>
+                        <tr>
+                            <th>Flight</th>
+                            <th>Airline</th>
+                            <th>Departure</th>
+                            <th>Fare (₹)</th>
+                            <th>Collected At</th>
+                            <th>Source</th>
+                        </tr>
+                    </thead>
+                    <tbody id="obs-table-body"></tbody>
+                </table>
+            </section>
+        </main>
+    </div>
 
     <script src="app.js"></script>
+    <script src="nav.js"></script>
 </body>
 </html>

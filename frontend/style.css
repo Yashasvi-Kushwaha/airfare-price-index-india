@@ -1,14 +1,42 @@
+* { box-sizing: border-box; }
+
 body {
+    margin: 0;
     font-family: system-ui, sans-serif;
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 20px;
     background: #f7f8fa;
     color: #1a1a1a;
 }
 
-header { margin-bottom: 30px; }
-.subtitle { color: #555; }
+.layout { display: flex; min-height: 100vh; }
+
+.sidebar {
+    width: 240px;
+    background: #1a1f36;
+    color: white;
+    padding: 24px 16px;
+    flex-shrink: 0;
+}
+
+.sidebar .brand { font-size: 1.2em; margin: 0; color: white; }
+.sidebar .subtitle { color: #9aa3b8; font-size: 0.85em; margin: 4px 0 24px; }
+
+.nav-links { list-style: none; padding: 0; margin: 0; }
+.nav-link {
+    display: block;
+    color: #c5cae0;
+    text-decoration: none;
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    font-size: 0.95em;
+}
+.nav-link:hover { background: #2a3152; }
+.nav-link.active { background: #3d5afe; color: white; }
+
+.content { flex: 1; padding: 32px 40px; max-width: 900px; }
+
+.view { display: none; }
+.view.active { display: block; }
 
 section {
     background: white;
@@ -29,7 +57,7 @@ section {
 
 .route-card h3 { margin: 0 0 8px 0; }
 .route-card .stat { font-size: 1.4em; font-weight: bold; }
-.route-card .stat.positive { color: #27ae60 ; }
+.route-card .stat.positive { color: #27ae60; }
 .route-card .stat.negative { color: #c0392b; }
 
 table { width: 100%; border-collapse: collapse; margin-top: 12px; }

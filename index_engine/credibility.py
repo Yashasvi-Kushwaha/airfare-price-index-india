@@ -3,7 +3,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from datetime import datetime, timedelta
 from database.db_setup import SessionLocal
-from database.models import FareObservation
 from index_engine.jevons import get_observations_for_date, jevons_movement
 
 
