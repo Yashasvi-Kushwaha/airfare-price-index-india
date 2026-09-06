@@ -1,211 +1,599 @@
 # Airfare Price Index — India
 
-## Problem Statement (SIH26056)
-Development of a Real-time Airfare Price Index for India through Automated
-Web Scraping of Airline and Online Travel Aggregator Portals, to augment the
-Consumer Price Index (CPI) — MoSPI, Department: Data Informatics & Innovation
-Division (DIID).
+> A high-frequency, quality-controlled airfare measurement system for tracking route-level airfare movements across India.
 
-## The Actual Gap — Our Reframing
-MoSPI's CPI 2024 series **already** collects airfare data through online
-platforms (verified via MoSPI's own FAQ documentation). This is not a
-"digital collection doesn't exist" problem. The real gaps, drawn from MoSPI's
-own Expert Group Report on Comprehensive Updation of CPI:
+## 📌 Overview
 
-1. **Frequency gap** — Official CPI is released monthly, with a ~12-day
-   lag after month-end. Airfares can move 20-30% within a single day.
-   Short-lived shocks (festival demand, fuel-price jumps) can fully resolve
-   before the monthly figure is ever published.
-2. **Aggregation hides route-level stress** — The Expert Group explicitly
-   flags that thin routes / states with few airports produce volatile,
-   under-representative sub-indices (their own example: Haryana, using
-   Delhi as an airport proxy). Weighted national aggregation, by
-   construction, dilutes exactly these low-traffic routes — a route under
-   severe stress can be nearly invisible in the topline number.
+Airfare prices change dynamically based on booking time, route demand, airline availability, taxes, seasonality, and other factors. A single aggregate airfare measure can hide short-lived price shocks and route-level differences.
 
-## Our Idea
-A daily, flight-matched airfare index that stays statistically trustworthy
-on thin route data — using actuarial credibility theory to prevent noise
-from distorting the aggregate, while separately surfacing exactly the
-route-level stress that same weighting would otherwise hide.
+This project develops an automated airfare price measurement pipeline that collects flight-fare observations, standardizes them into a common schema, applies quality checks, computes flight-matched price movements, and presents the results through an interactive dashboard.
 
-**In short:** we don't just give one number. We show which route is under
-stress, how much, and whether that number is backed by enough data to trust.
+The system is designed as a **measurement and analytical layer** that can complement existing official airfare price collection rather than replace it.
 
-## Who This Serves
-- **RBI** — early signal on services inflation, ahead of the monthly CPI print
-- **Civil Aviation / DGCA** — route-level connectivity and affordability monitoring
-- **State governments** — visibility into whether their residents face
-  disproportionate fare hikes
-- **Researchers** — studying how fast shocks (fuel, capacity, policy changes)
-  pass through into realized fares
+---
 
-## Methodology
+## 🎯 Problem Statement
 
-### Two statistics, deliberately kept separate
-- **Median** — daily snapshot of "what's a typical fare today," a
-  standalone dashboard statistic. Never used in the index calculation.
-- **Jevons Index** — the actual measure of price movement. We match the
-  *same flight* (by airline + flight number) across two consecutive
-  collection days, compute each matched flight's price relative
-  (`today_fare / yesterday_fare`), and take the **geometric mean** of
-  those relatives. This avoids composition bias from comparing different
-  flight mixes day to day — a mistake naive average-to-average comparison
-  makes.
+The objective is to develop a system capable of:
 
-price_relative_i = fare_today_i / fare_yesterday_i
-Jevons movement = (Π price_relative_i)^(1/n) × 100
-Chained index = previous_index × (Jevons movement / 100)
+* Automatically collecting airfare data from airline/OTA sources.
+* Standardizing different fare formats into a common structure.
+* Tracking airfare movements at high frequency.
+* Measuring route-level price changes.
+* Identifying routes experiencing unusual price stress.
+* Studying the relationship between booking lead time and airfare.
+* Providing transparent access to the underlying observations used in calculations.
+* Supporting future development of a more granular airfare price index for India.
 
-### Credibility Weighting (experimental / illustrative)
-Bühlmann-style credibility blends a route's own price relative with a
-pooled class-average relative, weighted by how many observations back it:
+---
 
+## 💡 Our Approach
+
+The system follows the pipeline:
+
+```text
+Airline / OTA Websites
+          ↓
+      Web Scraper
+          ↓
+   Fare Normalization
+          ↓
+     Quality Control
+          ↓
+   Flight Matching
+          ↓
+   Price Relatives
+          ↓
+   Jevons Index
+          ↓
+ Credibility + Stress
+          ↓
+       FastAPI
+          ↓
+ Interactive Dashboard
+```
+
+The important design principle is that **raw observations are preserved** rather than immediately reducing everything to a single number.
+
+---
+
+# 🚀 MVP Features
+
+### 1. Automated Fare Collection
+
+The MVP uses **Python + Playwright** to collect flight-fare information from a live booking source.
+
+Each observation records information such as:
+
+* Airline
+* Flight number
+* Origin
+* Destination
+* Travel date
+* Departure time
+* Cabin
+* Booking lead time
+* Base fare
+* Taxes
+* Airport charges
+* Convenience fee
+* Baggage fee
+* Total fare
+* Collection timestamp
+* Source
+
+---
+
+### 2. Canonical Fare Schema
+
+Different websites represent fares differently.
+
+For example:
+
+```text
+Taxes & Fees
+Government Taxes
+Airport Fee
+Convenience Fee
+```
+
+are converted into our standard schema:
+
+```text
+base_fare
+taxes
+airport_charges
+convenience_fee
+baggage_fee
+total_fare
+```
+
+Missing components are **not artificially assigned zero values**.
+
+The system also records whether a complete fare breakdown was actually available.
+
+---
+
+### 3. Quality Control
+
+Before observations enter the index calculation, deterministic checks are applied.
+
+The system checks for:
+
+* Missing required fields
+* Invalid/unavailable flights
+* Duplicate flight observations
+* Invalid fare values
+* Inconsistent flight identities
+* Potential outliers
+
+Importantly, an outlier is **flagged rather than automatically deleted**, preserving the audit trail.
+
+---
+
+### 4. Flight-Level Matching
+
+Instead of comparing arbitrary fares from yesterday and today, the MVP attempts to compare the **same flight specification**.
+
+The flight identity is based on:
+
+```text
+Airline
++
+Flight Number
++
+Origin
++
+Destination
++
+Departure Time
++
+Travel Date
+```
+
+This reduces the risk of interpreting a change in flight composition as a genuine price change.
+
+---
+
+# 📊 Airfare Price Index
+
+The MVP uses matched individual fare observations to calculate price relatives.
+
+For observation `i`:
+
+```text
+rᵢ = Pᵢ,t / Pᵢ,t-1
+```
+
+The daily movement is calculated using a **Jevons index**:
+
+```text
+Jₜ = (Π rᵢ)^(1/n) × 100
+```
+
+The index is then chained over time:
+
+```text
+Iₜ = Iₜ₋₁ × Jₜ / 100
+```
+
+This produces a time series showing airfare price movement while maintaining like-for-like flight comparisons.
+
+---
+
+# 📈 Dashboard
+
+The dashboard provides several levels of analysis.
+
+### Route Summary
+
+Shows:
+
+* Route
+* Number of observations
+* Price movement
+* Route status
+
+### Median Fare
+
+The median is displayed separately as a robust measure of the **typical fare observed today**.
+
+We do **not** use the median as a substitute for the Jevons index.
+
+### Distribution
+
+The dashboard can display:
+
+* Median
+* Q1
+* Q3
+* Fare spread
+
+This helps distinguish a broad price increase from a change concentrated in a few fares.
+
+### Stress Analysis
+
+Routes can be examined for unusually strong price movements.
+
+Example:
+
+```text
+DEL → BOM      +2%       LOW
+DEL → GAU     +30%      HIGH
+```
+
+This allows users to see **which routes are driving airfare pressure**, rather than looking only at an aggregate index.
+
+---
+
+# 🔍 Credibility Adjustment
+
+The MVP includes an experimental **Bühlmann-style credibility adjustment**.
+
+The idea is to avoid giving a route with very few observations the same statistical confidence as a route with substantially more information.
+
+Conceptually:
+
+```text
 Z = n / (n + k)
-credibility_weighted_relative = Z × route_relative + (1 - Z) × pooled_relative
+```
 
-A route with plenty of matched observations is trusted almost entirely on
-its own signal. A thin route leans more on the pooled average, preventing
-noise from distorting the trusted index. **The constant `k` is illustrative,
-chosen to demonstrate differentiation at MVP data scale — not empirically
-fitted from historical variance.** This is explicitly an experimental
-reliability layer, not a validated production methodology.
+where:
 
-### Stress Score (the actual differentiator)
-Computed independently, unweighted — the raw deviation regardless of
-observation count:
-stress_score = (route_relative - 1) × 100
-This ensures a genuinely stressed thin route is never hidden just because
-credibility weighting dampens its contribution to the trusted aggregate.
-**Credibility weighting answers "how much should we trust this number?"
-Stress score answers "how bad is it really?" — both are shown, side by side.**
+* `n` = amount of route-specific information
+* `k` = smoothing/credibility parameter
 
-### Lead-Time Relationship
-Compares median fare at two booking horizons (T+7 vs T+30) for the same
-travel date. Labeled explicitly as an **observed relationship, not a
-causal estimate**.
+The adjusted estimate is blended with a broader pooled estimate.
 
-### Quality Control (deterministic, not ML)
-- Required-field validation
-- Availability check (sold-out ≠ ₹0)
-- Duplicate detection via flight identity (airline + flight_number +
-  origin + destination + departure_time + travel_date)
-- Outliers flagged, not silently deleted
+### Important
 
-## Architecture / Workflow
-Airline / OTA Website
-↓
-Scraper (Playwright)
-↓
-Fare Decomposition & Normalization (pandas)
-↓
-Quality Control (deterministic rules)
-↓
-SQLite Database (via SQLAlchemy)
-↓
-Index Engine (Jevons, numpy)
-↓
-Credibility + Stress Layer
-↓
-FastAPI (REST endpoints)
-↓
-Dashboard (Vanilla JS + Chart.js, sidebar navigation)
+The credibility adjustment is **not an official CPI methodology**.
 
-## API Endpoints
-| Endpoint | Purpose |
-|---|---|
-| `GET /api/index` | Daily Jevons movement, credibility-adjusted relative, and stress score per route |
-| `GET /api/observations/{origin}/{destination}` | Raw observations — audit trail |
-| `GET /api/median-history/{origin}/{destination}` | Median fare trend over recent days |
-| `GET /api/lead-time/{origin}/{destination}` | T+7 vs T+30 fare comparison |
+It is an experimental reliability layer intended to demonstrate how sparse-route estimates can be stabilized.
 
-## Current Status 
+The raw index remains available separately.
 
-**What's fully working:** the complete pipeline — schema, index calculation,
-credibility weighting, stress score, all four API endpoints, and a
-full sidebar-navigated dashboard (Overview, Route Stress Comparison, Fare
-Trends, Lead-Time Analysis, Audit Trail) — verified end-to-end with real
-calculations on representative data.
+---
 
-**Data source:** Our Playwright scraper successfully automates search and
-navigation on SpiceJet's website, reaching live results pages. Fare
-extraction from SpiceJet's dynamically-rendered results (built on React
-Native for Web, with auto-generated, non-persistent CSS class names) is an
-active engineering task. To demonstrate the complete measurement
-methodology within our build window, we validated the index, credibility,
-and stress-detection logic against representative sample data matching our
-exact schema — the same pipeline that will consume live scraped data once
-extraction is finalized.
+# ⏱️ Lead-Time Analysis
 
-**Routes covered:** 2 — DEL-BOM (dense, high-traffic) and DEL-IXL (thin,
-low-observation) — deliberately chosen to demonstrate the credibility /
-stress differentiation live.
+Airfares depend strongly on how far in advance a ticket is purchased.
 
-**Booking windows:** T+7 and T+30.
+The MVP therefore compares matched flights at different booking horizons.
 
-**Known limitation:** the current `/api/index` daily observation count
-mixes T+7 and T+30 observations for "today" without filtering by
-`advance_days` — a fix planned but not yet applied (the core index
-calculation itself is correctly matched by flight and unaffected).
+For example:
 
-## Tech Stack
+```text
+Same flight
+Same route
+Same travel date
 
-| Layer | MVP | Full-Scale Roadmap |
-|---|---|---|
-| Scraping | Python + Playwright | Playwright/Scrapy hybrid, all 11 sources |
-| Normalization | pandas | Same, scaled |
-| Index/Credibility/Stress | numpy, hand-written | Same core formulas, empirically-fitted k |
-| Database | SQLite via SQLAlchemy | PostgreSQL |
-| Backend | FastAPI | FastAPI |
-| Frontend | Vanilla JS + Chart.js | React |
-| Scheduling | Manual / cron | Apache Airflow |
-| Caching/Queue | None | Redis + Kafka/RabbitMQ |
-| Deployment | Local | Docker + Kubernetes, cloud-hosted |
-| Anomaly Detection | Deterministic rules | ML (Isolation Forest), once sufficient volume exists |
-| Monitoring | Logs | Prometheus + Grafana |
+T+30 → ₹4,379
+T+7  → ₹5,199.50
+```
 
-## Roadmap (Full-Scale Vision)
-- Full coverage: 5 airlines + 6 OTAs, complete DGCA route basket
-- 5 booking windows (T+1/7/15/30/45) for a full lead-time curve
-- Full index hierarchy: route → city → region → national
-- Full flight-product standardization (baggage, refundability, fare class)
-- Airport-proxy mapping for airport-less states (per Expert Group precedent)
-- Rigorously fitted credibility constant from real historical variance data
-- ML-based anomaly detection once historical volume justifies it
+Observed increase:
 
-## How to Run
+```text
++18.7%
+```
 
-1. Clone the repo and set up the environment:
+The dashboard visualizes this relationship using a **T+30 vs T+7 comparison**.
 
-python -m venv .venv
-.venv\Scripts\activate.bat
-pip install -r requirements.txt
-playwright install chromium
+This is explicitly treated as an **observed relationship, not a causal claim**.
 
-2. Load sample data:
+The architecture can later be extended to:
 
+```text
+T+45
+T+30
+T+21
+T+15
+T+7
+T+3
+T+1
+```
+
+---
+
+# 🧾 Auditability
+
+A major design goal is transparency.
+
+Every calculated result should be traceable back to the observations that generated it.
+
+The dashboard therefore includes an observation-level audit view containing:
+
+```text
+Flight
+Airline
+Departure
+Fare
+Collection time
+Source
+```
+
+This makes it possible to inspect the underlying data instead of treating the index as a black box.
+
+---
+
+# 🗺️ Current MVP Coverage
+
+The MVP currently demonstrates the pipeline using:
+
+```text
+DEL → BOM
+DEL → IXL
+```
+
+with:
+
+* One live scraping source
+* Dense and thin route examples
+* T+7 observations
+* T+30 lead-time observations
+* Synthetic data used as a controlled test harness for pipeline validation
+
+The architecture is designed to expand to additional routes and sources.
+
+---
+
+# 🏗️ Technology Stack
+
+| Component       | Technology          | Purpose                   |
+| --------------- | ------------------- | ------------------------- |
+| Scraping        | Python + Playwright | Automated fare collection |
+| Data validation | Pydantic            | Schema validation         |
+| Data processing | pandas + NumPy      | Transformation/statistics |
+| Database ORM    | SQLAlchemy          | Database interaction      |
+| Database        | SQLite              | MVP persistence           |
+| Backend         | FastAPI             | API layer                 |
+| Frontend        | HTML/CSS/JavaScript | Dashboard                 |
+| Charts          | Chart.js            | Data visualization        |
+| Testing         | Pytest              | Validation/testing        |
+| Version control | Git/GitHub          | Development/versioning    |
+
+---
+
+# 📁 Project Structure
+
+```text
+airfare-price-index-india/
+│
+├── scraper/
+│   └── ...
+│
+├── pipeline/
+│   ├── fake_data_generator.py
+│   ├── load_fake_data.py
+│   └── ...
+│
+├── index_engine/
+│   └── ...
+│
+├── database/
+│   ├── models.py
+│   └── db_setup.py
+│
+├── backend/
+│   └── main.py
+│
+├── frontend/
+│   ├── index.html
+│   ├── app.js
+│   └── style.css
+│
+├── tests/
+│   └── ...
+│
+├── data_sources/
+│   └── ...
+│
+└── README.md
+```
+
+---
+
+# ⚙️ Installation
+
+Clone the repository:
+
+```bash
+git clone <repository-url>
+cd airfare-price-index-india
+```
+
+Install dependencies:
+
+```bash
+python -m pip install sqlalchemy fastapi uvicorn pydantic pandas numpy playwright
+```
+
+Install the Playwright browser:
+
+```bash
+python -m playwright install chromium
+```
+
+---
+
+# ▶️ Running the MVP
+
+### 1. Load test data
+
+```bash
 python pipeline\load_fake_data.py
+```
 
-3. Start the backend:
+### 2. Start the API
 
-uvicorn backend.main:app --reload
+```bash
+python -m uvicorn backend.main:app --reload
+```
 
-4. In a separate terminal, start the frontend:
+The API will be available at:
 
+```text
+http://127.0.0.1:8000
+```
+
+FastAPI documentation:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+### 3. Start the frontend
+
+From another terminal:
+
+```bash
 cd frontend
 python -m http.server 5500
+```
 
-5. Open `http://127.0.0.1:5500` in your browser.
+Open:
 
-## Feasibility & Viability
+```text
+http://127.0.0.1:5500
+```
 
-**Feasibility:** Core methodology and full pipeline are technically
-demonstrated end-to-end with real calculations. Production-scale requires
-formal data-access agreements with airlines/OTAs (or DGCA-mediated access)
-and infrastructure scale-up per the roadmap above.
+---
 
-**Viability:** Addresses two problems explicitly identified as open gaps in
-MoSPI's own Expert Group Report. Positioned as a research / decision-support
-supplementary indicator for RBI, DGCA, and state governments — not a
-drop-in replacement for official CPI, and not claiming production-grade
-statistical validation at MVP stage.
+# 🧪 Example API
+
+Lead-time analysis:
+
+```text
+GET /api/lead-time/DEL/BOM
+```
+
+Example response:
+
+```json
+{
+  "route": "DEL-BOM",
+  "T+30_median_fare": 4379.0,
+  "T+7_median_fare": 5199.5,
+  "percent_increase_last_minute": 18.7,
+  "matched_flights": 5
+}
+```
+
+Flight-level results can then show which individual flights contributed to the observed movement.
+
+---
+
+# 🔮 Future Development
+
+The MVP establishes the core measurement pipeline. Future versions can expand it into a production-scale system.
+
+### Data Coverage
+
+* Multiple airlines
+* Multiple OTAs
+* More domestic routes
+* Non-metro cities
+* North-East India
+* Hill states
+* Island regions
+* Airport-proxy coverage where a locality has no airport
+
+### Index Methodology
+
+* DGCA passenger-traffic-based route weights
+* More rigorous weight updating
+* Route/class aggregation
+* Alternative index formulas
+* Hedonic quality adjustment
+* Seasonal adjustment
+* Improved credibility estimation
+
+### Analytics
+
+* Daily/weekly/monthly/yearly comparisons
+* Shock duration detection
+* Route contribution analysis
+* Regional airfare inflation
+* Metro vs tier-2 comparisons
+* Airfare vs general inflation
+* Fuel-price relationship
+* Airline entry/exit effects
+* Policy-event analysis
+* Forecasting
+
+### Production Infrastructure
+
+```text
+SQLite
+   ↓
+PostgreSQL
+
+Python Scheduler
+   ↓
+Airflow / Prefect
+
+Local deployment
+   ↓
+Cloud infrastructure
+
+Basic anomaly detection
+   ↓
+ML-based anomaly detection & forecasting
+```
+
+---
+
+# ⚠️ Limitations
+
+The current MVP should not be interpreted as an official CPI replacement.
+
+Important limitations include:
+
+* Limited number of routes
+* Limited source coverage
+* Limited observation history
+* Synthetic data is used for controlled pipeline testing
+* Scraped availability may change dynamically
+* Website layouts can change
+* Fare definitions may differ between sources
+* Search results may not represent the entire market
+* Lead-time relationships are observational
+* Experimental credibility adjustment has not been statistically calibrated for official use
+* Route representativeness requires appropriate external traffic weights
+
+---
+
+# 🎯 Why This Project Matters
+
+The objective is not simply to display cheap or expensive flights.
+
+The objective is to build a **transparent airfare measurement system** that can answer questions such as:
+
+> **When did airfare pressure begin?**
+
+> **Which routes caused it?**
+
+> **How large was the increase?**
+
+> **How long did the shock last?**
+
+> **Were non-metro or regional routes affected differently?**
+
+> **Are fares rising faster than general inflation?**
+
+> **How reliable is the estimate given the available observations?**
+
+This moves airfare analysis from a single aggregate number toward a **high-frequency, route-level view of price dynamics**.
+
+---
+
+# 👥 Team / Project
+
+**Project:** Airfare Price Index — India
+**SIH Problem Statement:** SIH26056
+**Organization:** Ministry of Statistics & Programme Implementation (MoSPI)
+**Category:** Software
+**Theme:** Travel & Tourism
+
+---
