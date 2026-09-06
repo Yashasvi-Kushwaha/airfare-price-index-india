@@ -590,6 +590,8 @@ This moves airfare analysis from a single aggregate number toward a **high-frequ
 
 # 👥 Team / Project
 
+**Team Name:** Psi Square
+
 **Project:** Airfare Price Index — India
 
 **SIH Problem Statement:** SIH26056
