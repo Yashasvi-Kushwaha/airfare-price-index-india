@@ -65,3 +65,55 @@ th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid #eee; }
 th { background: #fafafa; }
 
 .note { color: #777; font-size: 0.9em; }
+.login-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    background: #1a1f36;
+}
+
+.login-box {
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    width: 320px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.login-box h1 { font-size: 1.3em; margin-bottom: 4px; }
+.login-box .subtitle { color: #777; margin-bottom: 24px; }
+
+.login-box label {
+    display: block;
+    text-align: left;
+    font-size: 0.85em;
+    margin: 12px 0 4px;
+    color: #444;
+}
+
+.login-box input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+.login-box button {
+    width: 100%;
+    margin-top: 20px;
+    padding: 10px;
+    background: #3d5afe;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+.login-box button:hover { background: #2a3ec7; }
+
+.error-text { color: #c0392b; font-size: 0.85em; margin-top: 10px; }

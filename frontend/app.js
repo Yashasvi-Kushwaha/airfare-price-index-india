@@ -1,5 +1,7 @@
 const API_BASE = "http://127.0.0.1:8000";
-
+if (sessionStorage.getItem("loggedIn") !== "true") {
+    window.location.href = "login.html";
+}
 async function loadIndexData() {
     try {
         const res = await fetch(`${API_BASE}/api/index`);
