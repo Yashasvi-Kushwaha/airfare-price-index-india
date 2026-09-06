@@ -591,9 +591,13 @@ This moves airfare analysis from a single aggregate number toward a **high-frequ
 # 👥 Team / Project
 
 **Project:** Airfare Price Index — India
+
 **SIH Problem Statement:** SIH26056
+
 **Organization:** Ministry of Statistics & Programme Implementation (MoSPI)
+
 **Category:** Software
+
 **Theme:** Travel & Tourism
 
 ---
