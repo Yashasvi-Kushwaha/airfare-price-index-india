@@ -156,7 +156,7 @@ calculation itself is correctly matched by flight and unaffected).
 | Normalization | pandas | Same, scaled |
 | Index/Credibility/Stress | numpy, hand-written | Same core formulas, empirically-fitted k |
 | Database | SQLite via SQLAlchemy | PostgreSQL |
-| Backend | FastAPI | FastAPI (unchanged) |
+| Backend | FastAPI | FastAPI |
 | Frontend | Vanilla JS + Chart.js | React |
 | Scheduling | Manual / cron | Apache Airflow |
 | Caching/Queue | None | Redis + Kafka/RabbitMQ |
